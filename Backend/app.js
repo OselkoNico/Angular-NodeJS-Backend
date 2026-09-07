@@ -1,11 +1,9 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import router from './routes/proveedores.js';
 import authRouter from './routes/auth.js';
 
-const app = express();
-const port = process.env.PORT || 3000;
+export const app = express();
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:4200'
@@ -27,8 +25,4 @@ app.use((error, req, res, next) => {
     res.status(500).json({
         message: 'Error interno del servidor.',
     });
-});
-
-app.listen(port, () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
 });

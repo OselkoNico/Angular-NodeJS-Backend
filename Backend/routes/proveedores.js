@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { verificarToken, soloAdmin } from '../middleware/auth.js';
+import { parsearPaginacion } from '../utils/paginacion.js';
 
 const router = express.Router();
 
@@ -9,9 +10,7 @@ router.use(verificarToken);
 const CAMPOS = 'cif, name, activity, address, city, postal_code AS postalCode, phone';
 
 router.get('/', async (req, res, next) => {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
-    const offset = (page - 1) * limit;
+    const { page, limit, offset } = parsearPaginacion(req.query);
     const search = (req.query.search ?? '').trim();
 
     const filtro = search ? 'WHERE name LIKE ? OR cif LIKE ?' : '';
