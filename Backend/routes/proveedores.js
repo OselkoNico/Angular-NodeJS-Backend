@@ -6,14 +6,35 @@ const router = express.Router();
 const CAMPOS = 'cif, name, activity, address, city, postal_code AS postalCode, phone';
 
 router.get('/', async (req, res, next) => {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+    const offset = (page - 1) * limit;
+    const search = (req.query.search ?? '').trim();
+
+    const filtro = search ? 'WHERE name LIKE ? OR cif LIKE ?' : '';
+    const parametros = search ? [`%${search}%`, `%${search}%`] : [];
+
     try {
-        const [proveedores] = await pool.query(
-            `SELECT ${CAMPOS} FROM proveedores ORDER BY name`
+        const [filas] = await pool.execute(
+            `SELECT COUNT(*) AS total FROM proveedores ${filtro}`,
+            parametros
+        );
+        const total = filas[0].total;
+
+        const [proveedores] = await pool.execute(
+            `SELECT ${CAMPOS} FROM proveedores ${filtro}
+             ORDER BY name
+             LIMIT ${limit} OFFSET ${offset}`,
+            parametros
         );
 
         res.status(200).json({
             message: 'Ok',
-            proveedores
+            proveedores,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
         });
     } catch (error) {
         next(error);
