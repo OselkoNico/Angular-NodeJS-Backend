@@ -1,7 +1,10 @@
 import express from 'express';
 import { pool } from '../db.js';
+import { verificarToken, soloAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+
+router.use(verificarToken);
 
 const CAMPOS = 'cif, name, activity, address, city, postal_code AS postalCode, phone';
 
@@ -63,7 +66,7 @@ router.get('/:cif', async (req, res, next) => {
     }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', soloAdmin, async (req, res, next) => {
     const { cif, name, activity, address, city, postalCode, phone } = req.body;
 
     if (!cif || !name) {
@@ -94,7 +97,7 @@ router.post('/', async (req, res, next) => {
     }
 });
 
-router.put('/:cif', async (req, res, next) => {
+router.put('/:cif', soloAdmin, async (req, res, next) => {
     const { name, activity, address, city, postalCode, phone } = req.body;
 
     if (!name) {
@@ -126,7 +129,7 @@ router.put('/:cif', async (req, res, next) => {
     }
 });
 
-router.delete('/:cif', async (req, res, next) => {
+router.delete('/:cif', soloAdmin, async (req, res, next) => {
     try {
         const [rows] = await pool.execute(
             `SELECT ${CAMPOS} FROM proveedores WHERE cif = ?`,
