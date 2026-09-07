@@ -1,13 +1,19 @@
 import 'dotenv/config';
 import express from 'express';
-import router from './routes/proveedores.js';
 import cors from 'cors';
+import router from './routes/proveedores.js';
+import authRouter from './routes/auth.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:4200'
+}));
+
 app.use(express.json());
+
+app.use('/auth', authRouter);
 app.use('/proveedores', router);
 
 app.use((req, res) => {
